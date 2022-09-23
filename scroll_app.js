@@ -9,9 +9,7 @@ const navToggle = document.querySelector(".nav-toggle");
 const linksContainer = document.querySelector(".links-container");
 const links = document.querySelector(".links");
 
-
 navToggle.addEventListener("click", function () {
-
   const containerHeight = linksContainer.getBoundingClientRect().height;
   const linksHeight = links.getBoundingClientRect().height;
 
@@ -22,27 +20,38 @@ navToggle.addEventListener("click", function () {
   }
 });
 
-// ********** fixed navbar ************
 
+// ********** Sticky Nav ************
+
+// IntersectionObserver instead of event scroll
+
+const header = document.getElementById("home");
 const navbar = document.getElementById("nav");
+const navHeight = navbar.getBoundingClientRect().height;
 const topLink = document.querySelector(".top-link");
 
-window.addEventListener("scroll", function () {
+const stickyNav = function(entries) {
   const scrollHeight = window.pageYOffset;
-  const navHeight = navbar.getBoundingClientRect().height;
-
-  if (scrollHeight > navHeight) {
+  const [entry] = entries;
+  // Want sticky when header is out of view
+  // when isIntersecting: false --> want to add sticky
+  if (!entry.isIntersecting) { // no longer in header -- add sticky
     navbar.classList.add("fixed-nav");
-  } else {
-    navbar.classList.remove("fixed-nav");
-  }
-  // setup back to top link
-  if (scrollHeight > 500) {
     topLink.classList.add("show-link");
-  } else {
+  } else { // in header -- remove sticky
+    // when isIntersecting: true --> want to remove sticky
+    navbar.classList.remove("fixed-nav");
     topLink.classList.remove("show-link");
-  }
-});
+  }  
+};
+
+const headerObserver = new IntersectionObserver(stickyNav, {
+  root: null,
+  threshold: 0.25, // --> 25% of the header is no longer visible
+  });
+headerObserver.observe(header);
+
+
 
 // ********** smooth scroll ************
 // select links
@@ -59,12 +68,13 @@ scrollLinks.forEach(link => {
     // calculate the heights
     const navHeight = navbar.getBoundingClientRect().height;
     const containerHeight = linksContainer.getBoundingClientRect().height;
-    const fixedNav = navbar.classList.contains("fixed-nav");
+     const fixedNav = navbar.classList.contains("fixed-nav");
     let position = element.offsetTop - navHeight;
-
+ 
     if (!fixedNav) {
       position = position - navHeight;
     }
+
     if (navHeight > 82) {
       position = position + containerHeight;
     }
